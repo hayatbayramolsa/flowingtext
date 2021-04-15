@@ -9,6 +9,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  ScrollController scrollController = ScrollController();
+  bool active = false;
+  Timer timer;
+  int speed = 1;
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +30,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Column(
           children: [
+
             // TITLE
             Container(
                 padding: EdgeInsets.symmetric(vertical: 10),
@@ -35,13 +41,17 @@ class _HomePageState extends State<HomePage> {
                     style: GoogleFonts.poppins(color: Color(0xFF194350)),
                   ),
                 )),
+
             // CONTENT
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(top: 10, right: 15, left: 15),
+                physics: BouncingScrollPhysics(),
+                controller: scrollController,
+                padding: EdgeInsets.only(top: 15, right: 20, left: 20),
                 child: Text(text),
               ),
             ),
+            
             // CONTROLS
             Container(
               padding: EdgeInsets.symmetric(vertical: 10),
@@ -54,29 +64,51 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       buildButton(
                         text: "-",
-                        onPressed: () {},
+                        onPressed: () {
+                          if (speed >= 1) {
+                            setState(() {
+                              speed--;
+                            });
+                          }
+                        },
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: Text(
-                          "1",
+                          speed.toString(),
                           style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 24
-                          ),
+                              color: Colors.white, fontSize: 24),
                         ),
                       ),
                       buildButton(
                         text: "+",
-                        onPressed: () {},
+                        onPressed: () {
+                          setState(() {
+                            speed++;
+                          });
+                        },
                       ),
                     ],
                   ),
                   // start-stop button
                   buildButton(
-                    text: "Başlat",
-                    icon: Icons.play_circle_fill,
-                    onPressed: () {},
+                    text: active ? "Durdur" : "Başlat",
+                    icon: active ? Icons.stop_sharp : Icons.play_circle_fill,
+                    onPressed: () {
+                      if (active) {
+                        timer.cancel();
+                      } else {
+                        timer =
+                            Timer.periodic(Duration(milliseconds: 10), (timer) {
+                          scrollController.jumpTo(
+                              scrollController.position.pixels + speed * 0.1);
+                        });
+                      }
+
+                      setState(() {
+                        active = !active;
+                      });
+                    },
                   ),
                 ],
               ),
